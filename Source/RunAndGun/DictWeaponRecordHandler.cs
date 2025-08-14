@@ -3,10 +3,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Verse;
 
 namespace RunAndGun
 {
-    class DictWeaponRecordHandler : SettingHandleConvertible
+    public class DictWeaponRecordHandler : SettingHandleConvertible, IExposable
     {
         public Dictionary<String, WeaponRecord> inner = new Dictionary<String, WeaponRecord>();
         public Dictionary<String, WeaponRecord> InnerList { get { return inner; } set { inner = value; } }
@@ -40,6 +41,25 @@ namespace RunAndGun
             }
 
             return inner != null ? String.Join("|", strings.ToArray()) : "";
+        }
+
+        public void ExposeData()
+        {
+            if (Scribe.mode == LoadSaveMode.Saving)
+            {
+                string serialized = ToString();
+                Scribe_Values.Look(ref serialized, "innerSerialized", "");
+            }
+            else if (Scribe.mode == LoadSaveMode.LoadingVars)
+            {
+                string serialized = "";
+                Scribe_Values.Look(ref serialized, "innerSerialized", "");
+                FromString(serialized);
+            }
+            else if (Scribe.mode == LoadSaveMode.PostLoadInit)
+            {
+                if (inner == null) inner = new Dictionary<string, WeaponRecord>();
+            }
         }
     }
 }

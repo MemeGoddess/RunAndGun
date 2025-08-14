@@ -21,23 +21,23 @@ namespace RunAndGun.Harmony
                 return;
             }
             CompRunAndGun comp = ___pawn.TryGetComp<CompRunAndGun>();
-            if (comp != null && Base.enableForAI.Value)
+            if (comp != null && RunAndGun.settings.enableForAI)
             {
                 comp.isEnabled = shouldRunAndGun();
             }
         }
         static bool shouldRunAndGun()
         {
-            var rndInt = new Random(DateTime.Now.Millisecond).Next(1, 100);
-            int chance = Base.enableForFleeChance.Value;
-            if (rndInt <= chance)
-            {
-                return true;
-            }
-            else
-            {
+            var chance = RunAndGun.settings.enableForFleeChance;
+
+            if (chance < 1)
                 return false;
-            }
+
+            if (chance > 99)
+                return true;
+
+            var r = UnityEngine.Random.Range(1f, 100f);
+            return r <= chance;
 
         }
     }

@@ -68,9 +68,9 @@ namespace RunAndGun
             var downloadButtonRect = new Rect(inRect.x, inRect.height - ConfirmButtonSize.y, ConfirmButtonSize.x, ConfirmButtonSize.y);
             if (Widgets.ButtonText(downloadButtonRect, ConfirmButtonCaption))
             {
-                Base.Instance.ResetForbidden();
+                RunAndGun.Instance.ResetForbidden();
                 Close();
-                Base.dialogCEShown.Value = true;
+                RunAndGun.settings.dialogCEShown = true;
                 HugsLibController.SettingsManager.SaveChanges();
             }
             GUI.color = prevColor;
@@ -78,7 +78,7 @@ namespace RunAndGun
             if (Widgets.ButtonText(closeButtonRect, "RG_Dialog_CE_DisallowButton".Translate()))
             {
                 Close();
-                Base.dialogCEShown.Value = true;
+                RunAndGun.settings.dialogCEShown = true;
                 HugsLibController.SettingsManager.SaveChanges();
             }
         }

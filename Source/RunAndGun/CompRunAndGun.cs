@@ -37,7 +37,7 @@ namespace RunAndGun
         {
             if (pawn.equipment != null && pawn.equipment.Primary != null)
             {
-                bool found = Base.weaponForbidder.Value.InnerList.TryGetValue(pawn.equipment.Primary.def.defName, out WeaponRecord value);
+                bool found = RunAndGun.settings.weaponForbidder.InnerList.TryGetValue(pawn.equipment.Primary.def.defName, out WeaponRecord value);
                 if (found && value.isSelected)
                 {
                     isEnabled = false;
@@ -50,7 +50,7 @@ namespace RunAndGun
         {
             base.Initialize(props);
             Pawn pawn = (Pawn)(parent as Pawn);
-            bool enableRGForAI = Base.enableForAI.Value;
+            bool enableRGForAI = RunAndGun.settings.enableForAI;
             if (!pawn.IsColonist && enableRGForAI)
             {
                 isEnabled = true;
