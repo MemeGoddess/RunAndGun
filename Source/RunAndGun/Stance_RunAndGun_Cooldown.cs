@@ -10,6 +10,7 @@ namespace RunAndGun
 {
     class Stance_RunAndGun_Cooldown : Stance_Cooldown
     {
+        private const float MaxRadius = 0.5f;
         public override bool StanceBusy
         {
             get
