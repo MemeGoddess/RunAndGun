@@ -106,11 +106,11 @@ namespace RunAndGun
                 weightLimitFilter = Widgets.HorizontalSlider(listing.GetRect(22f), weightLimitFilter, 0f, maxWeightTotal, false, "", "0", maxWeightTotal.ToString("F1"));
 
                 //DrawUtility.CustomDrawer_Filter(listing.GetRect(120f), weightLimitFilter, false, 0, maxWeightTotal, Color.yellow);
-                DrawUtility.CustomDrawer_MatchingWeapons_active(listing.GetRect(200f), ref selectedWeapons, allWeapons, weightLimitFilter, "RG_ConsideredLight".Translate(), "RG_ConsideredHeavy".Translate());
+                DrawUtility.CustomDrawer_MatchingWeapons_active(listing.GetRect(253f), ref selectedWeapons, allWeapons, weightLimitFilter, "RG_ConsideredLight".Translate(), "RG_ConsideredHeavy".Translate());
             }
             else if (tabsHandler == tabNames[1])
             {
-                DrawUtility.CustomDrawer_MatchingWeapons_active(listing.GetRect(200f), ref forbiddenWeapons, allWeapons, null, "RG_Allow".Translate(), "RG_Forbid".Translate());
+                DrawUtility.CustomDrawer_MatchingWeapons_active(listing.GetRect(253f), ref forbiddenWeapons, allWeapons, null, "RG_Allow".Translate(), "RG_Forbid".Translate());
             }
 
             listing.End();

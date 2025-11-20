@@ -140,13 +140,21 @@ namespace RunAndGun.Utilities
             setting = selection.OrderBy(d => d.Value.label).ToDictionary(d => d.Key, d => d.Value);
         }
 
+        private static Vector2 scroll = Vector2.zero;
         // 🔹 Draw weapon selection UI
         public static bool CustomDrawer_MatchingWeapons_active(Rect wholeRect, ref Dictionary<string, WeaponRecord> setting, List<ThingDef> allWeapons, float? filter = null, string yesText = "Light", string noText = "Heavy")
         {
-            DrawBackground(wholeRect, background);
+            var iconSizeAndGap = IconGap + IconSize;
+            int iconsPerRow = (int)(wholeRect.width / 2 / iconSizeAndGap);
+            var totalRows = MathF.Ceiling((setting.Count) / (float)iconsPerRow);
+            var fullHeight = totalRows * iconSizeAndGap + TextMargin;
 
-            Rect leftRect = new Rect(wholeRect.x, wholeRect.y + TextMargin, wholeRect.width / 2, wholeRect.height - TextMargin);
-            Rect rightRect = new Rect(leftRect.xMax, wholeRect.y + TextMargin, wholeRect.width / 2, wholeRect.height - TextMargin);
+            Rect leftRect = new Rect(wholeRect.x, 0, wholeRect.width / 2, fullHeight);
+            Rect rightRect = new Rect(leftRect.xMax, 0, wholeRect.width / 2, fullHeight);
+
+            Widgets.BeginScrollView(wholeRect, ref scroll, new Rect(0f, 0f, wholeRect.width - 16f, fullHeight));
+            DrawBackground(new Rect(0, 0, wholeRect.width, fullHeight), background);
+
 
             DrawLabel(yesText, leftRect, TextMargin);
             DrawLabel(noText, rightRect, TextMargin);
@@ -157,7 +165,6 @@ namespace RunAndGun.Utilities
             FilterWeapons(ref setting, allWeapons, filter);
             Dictionary<string, WeaponRecord> selection = setting;
 
-            int iconsPerRow = (int)(leftRect.width / (IconGap + IconSize));
             int indexLeft = 0, indexRight = 0;
             bool changed = false;
 
@@ -185,6 +192,7 @@ namespace RunAndGun.Utilities
             }
 
             if (changed) setting = selection;
+            Widgets.EndScrollView();
             return changed;
         }
     }
