@@ -26,5 +26,7 @@ Therefore some issues regarding mod compatibility are bound to come up. Most iss
 
 
 	</description>	
-	
+	<incompatibleWith>
+		<li>roolo.dualwield</li>
+	</incompatibleWith>
 </ModMetaData>
