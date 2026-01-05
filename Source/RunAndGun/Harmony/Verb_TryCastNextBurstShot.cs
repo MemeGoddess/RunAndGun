@@ -52,9 +52,7 @@ namespace RunAndGun.Harmony
         public static Stance_Cooldown UpdateStance(Pawn_StanceTracker stanceTracker, Stance_Cooldown stance)
         {
             if (stanceTracker.pawn.equipment?.Primary == null || stanceTracker.pawn.equipment.Primary.def.IsMeleeWeapon)
-            {
                 return stance;
-            }
 
             if (stanceTracker.pawn.equipment.Primary == stance.verb.EquipmentSource ||
                 stance.verb.EquipmentSource == null || stance.verb.EquipmentSource is Apparel)
