@@ -27,10 +27,18 @@ namespace RunAndGun
         public Dictionary<string, WeaponRecord> selectedWeapons = new Dictionary<string, WeaponRecord>();
         public Dictionary<string, WeaponRecord> forbiddenWeapons = new Dictionary<string, WeaponRecord>();
 
+        public readonly bool DualWieldInstalled;
+
         // === Cached state ===
         public List<ThingDef> allWeapons;
         private string[] tabNames = new[] { "Weapons", "Forbidden" };
         private float maxWeightMelee, maxWeightRanged, maxWeightTotal;
+
+        public Settings()
+        {
+            DualWieldInstalled = ModsConfig.IsActive("MemeGoddess.DualWield") ||
+                                 ModsConfig.IsActive("MemeGoddess.DualWield_steam");
+        }
 
         public void Initialize()
         {
