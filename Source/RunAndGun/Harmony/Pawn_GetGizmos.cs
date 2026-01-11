@@ -5,6 +5,7 @@ using HarmonyLib;
 using Verse;
 using UnityEngine;
 using RimWorld;
+using RunAndGun.Utilities;
 
 namespace RunAndGun.Harmony
 {
@@ -12,47 +13,53 @@ namespace RunAndGun.Harmony
     [HarmonyPatch(typeof(Pawn), "GetGizmos")]
     public class Pawn_DraftController_GetGizmos_Patch
     {
-        public static void Postfix(ref IEnumerable<Gizmo> __result, ref Pawn __instance)
+        private static string RG_Action_Enable_Label;
+        private static string RG_Action_Disable_Description;
+        private static string RG_Action_Enable_Description;
+        public static IEnumerable<Gizmo> Postfix(IEnumerable<Gizmo> __result, Pawn __instance)
         {
-            if (__instance == null || !__instance.Drafted || !__instance.Faction.Equals(Faction.OfPlayer) || !__instance.HasRangedWeapon())
-            {
-                return;
-            }
-            if (__result == null || !__result.Any())
-                return;
+            var results = __result?.ToList() ?? new List<Gizmo>();
+            if (!results.Any())
+                yield break;
 
-            CompRunAndGun data = __instance.TryGetComp<CompRunAndGun>();
+            foreach (var result in results)
+                yield return result;
+
+            if (!(__instance is { Drafted: true }) || !__instance.Faction.Equals(Faction.OfPlayer))
+                yield break;
+
+            var data = __instance.TryGetComp<CompRunAndGun>();
             if(data == null)
-            {
-                return;
-            }
-            if (__instance.equipment != null && __instance.equipment.Primary != null)
-            {
-                bool found = RunAndGun.settings.forbiddenWeapons.TryGetValue(__instance.equipment.Primary.def.defName, out WeaponRecord value);
-                if (found && value.isSelected)
-                {
-                    return;
-                }
-            }
+                yield break;
 
-            String uiElement = "enable_RG";
-            String label = "RG_Action_Enable_Label".Translate();
-            String description = data.isEnabled ? "RG_Action_Disable_Description".Translate() : "RG_Action_Enable_Description".Translate();
+            var weapons = new List<ThingDef>();
 
+            if (__instance.equipment?.Primary != null && __instance.equipment.Primary.def.IsRangedWeapon) 
+                weapons.Add(__instance.equipment.Primary.def);
 
-            var gizmoList = __result.ToList();
-            var ourGizmo = new Command_Toggle
+            if (RunAndGun.settings.DualWieldInstalled && (__instance.equipment?.GetOffHand(out var offhand) ?? false) && offhand.def.IsRangedWeapon)
+                weapons.Add(offhand.def);
+
+            data._disabled = !weapons.Any() || weapons.Any(x =>
+                RunAndGun.settings.forbiddenWeapons.TryGetValue(x.defName, out var forbidden) &&
+                forbidden.isSelected);
+
+            if(!weapons.Any())
+                yield break;
+
+            RG_Action_Enable_Label ??= "RG_Action_Enable_Label".Translate();
+            RG_Action_Disable_Description ??= "RG_Action_Disable_Description".Translate();
+            RG_Action_Enable_Description ??= "RG_Action_Enable_Description".Translate();
+
+            yield return new Command_Toggle
             {
-                defaultLabel = label,
-                defaultDesc = description,
-                icon = ContentFinder<Texture2D>.Get(("UI/Buttons/" + uiElement), true),
+                defaultLabel = RG_Action_Enable_Label,
+                defaultDesc = data.isEnabled ? RG_Action_Disable_Description : RG_Action_Enable_Description,
+                icon = ContentFinder<Texture2D>.Get(("UI/Buttons/enable_RG"), true),
                 isActive = () => data.isEnabled,
-                toggleAction = () => { data.isEnabled = !data.isEnabled; } 
+                toggleAction = () => { data.isEnabled = !data.isEnabled; } ,
+                Disabled = data._disabled,
             };
-
-
-            gizmoList.Add(ourGizmo);
-            __result = gizmoList;
         }
     }
 

@@ -3,7 +3,7 @@
     "RimWorld": {
       "commandName": "Executable",
       "executablePath": "C:\\RIMWorld_Debug\\RimWorld1.6\\RimWorldWin64.exe",
-      "commandLineArgs": "-savedatafolder=C:\\RIMWorld_Debug\\SaveDataRun1.6"
+      "commandLineArgs": "-savedatafolder=C:\\RIMWorld_Debug\\Saves\\DualWield"
     }
   }
 }
