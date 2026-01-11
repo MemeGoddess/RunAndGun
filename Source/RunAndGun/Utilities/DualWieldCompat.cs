@@ -31,6 +31,9 @@ namespace RunAndGun.Utilities
 
         internal static Pawn_StanceTracker GetOffHandStance(this Pawn pawn)
         {
+            if (!RunAndGun.settings.DualWieldInstalled)
+                return null;
+
             if (pawn == null)
                 return null;
 
@@ -39,6 +42,9 @@ namespace RunAndGun.Utilities
 
         internal static bool HasOffHand(this Pawn_EquipmentTracker equipment)
         {
+            if (!RunAndGun.settings.DualWieldInstalled)
+                return false;
+
             if (equipment == null)
                 return false;
 
@@ -48,6 +54,10 @@ namespace RunAndGun.Utilities
         internal static bool GetOffHand(this Pawn_EquipmentTracker equipment, out ThingWithComps offhand)
         {
             offhand = null;
+
+            if (!RunAndGun.settings.DualWieldInstalled)
+                return false;
+
             if(equipment == null)
                 return false;
 
