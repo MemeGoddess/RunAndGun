@@ -13,6 +13,9 @@ namespace RunAndGun.Harmony
     [HarmonyPatch(typeof(Pawn), "GetGizmos")]
     public class Pawn_DraftController_GetGizmos_Patch
     {
+        private static string RG_Action_Enable_Label;
+        private static string RG_Action_Disable_Description;
+        private static string RG_Action_Enable_Description;
         public static IEnumerable<Gizmo> Postfix(IEnumerable<Gizmo> __result, Pawn __instance)
         {
             var results = __result?.ToList() ?? new List<Gizmo>();
@@ -41,18 +44,18 @@ namespace RunAndGun.Harmony
                 RunAndGun.settings.forbiddenWeapons.TryGetValue(x.defName, out var forbidden) &&
                 forbidden.isSelected);
 
-            var uiElement = "enable_RG";
-            string label = "RG_Action_Enable_Label".Translate();
-            string description = data.isEnabled ? "RG_Action_Disable_Description".Translate() : "RG_Action_Enable_Description".Translate();
-
             if(!weapons.Any())
                 yield break;
 
+            RG_Action_Enable_Label ??= "RG_Action_Enable_Label".Translate();
+            RG_Action_Disable_Description ??= "RG_Action_Disable_Description".Translate();
+            RG_Action_Enable_Description ??= "RG_Action_Enable_Description".Translate();
+
             yield return new Command_Toggle
             {
-                defaultLabel = label,
-                defaultDesc = description,
-                icon = ContentFinder<Texture2D>.Get(("UI/Buttons/" + uiElement), true),
+                defaultLabel = RG_Action_Enable_Label,
+                defaultDesc = data.isEnabled ? RG_Action_Disable_Description : RG_Action_Enable_Description,
+                icon = ContentFinder<Texture2D>.Get(("UI/Buttons/enable_RG"), true),
                 isActive = () => data.isEnabled,
                 toggleAction = () => { data.isEnabled = !data.isEnabled; } ,
                 Disabled = data._disabled,
