@@ -1,11 +1,12 @@
-﻿using System;
+﻿using RunAndGun.Utilities;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using RunAndGun.Utilities;
+using Tacticowl;
 using UnityEngine;
 using Verse;
 using Verse.Noise;
@@ -63,6 +64,14 @@ namespace RunAndGun
                 DrawUtility.FilterWeapons(ref selectedWeapons, allWeapons, weightLimitFilter);
             if(forbiddenWeapons == null)
                 DrawUtility.FilterWeapons(ref forbiddenWeapons, allWeapons);
+        }
+
+        internal void ResetForbidden()
+        {
+            allWeapons ??= WeaponUtility.getAllWeapons();
+
+            forbiddenWeapons = null;
+            DrawUtility.FilterWeapons(ref forbiddenWeapons, allWeapons);
         }
 
         public void DoWindowContents(Rect rect)

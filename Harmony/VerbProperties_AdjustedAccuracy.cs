@@ -4,11 +4,13 @@ using System.Linq;
 using System.Text;
 using Verse;
 using HarmonyLib;
+using Tacticowl;
 
 namespace RunAndGun.Harmony
 {
 
 
+    [HarmonyPatchCategory(nameof(Tacticowl.PatchCategories.RunAndGun))]
     [HarmonyPatch(typeof(VerbProperties), "AdjustedAccuracy")]
     static class VerbProperties_AdjustedAccuracy
     {
@@ -31,7 +33,7 @@ namespace RunAndGun.Harmony
             }
             if (pawn.stances.curStance is Stance_RunAndGun || pawn.stances.curStance is Stance_RunAndGun_Cooldown)
             {
-                var value = RunAndGun.settings.accuracyPenalty;
+                var value = TacticowlMod.Settings.RunAndGun.accuracyPenalty;
                 float factor = ((float)(100 - value) / 100);
                 __result *= factor;
             }

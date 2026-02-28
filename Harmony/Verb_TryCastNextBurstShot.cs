@@ -11,6 +11,7 @@ using System.Reflection;
 
 namespace RunAndGun.Harmony
 {
+    [HarmonyPatchCategory(nameof(Tacticowl.PatchCategories.RunAndGun))]
     [HarmonyPatch(typeof(Verb), "TryCastNextBurstShot")]
     public static class Verb_TryCastNextBurstShot
     {
@@ -71,6 +72,7 @@ namespace RunAndGun.Harmony
         
     }
 
+    [HarmonyPatchCategory(nameof(Tacticowl.PatchCategories.RunAndGun))]
     [HarmonyPatch(typeof(Verb), "TryCastNextBurstShot")]
     public class Verb_TryCastNextBurstShot_Legacy
     {

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using LudeonTK;
+using Tacticowl;
 using UnityEngine;
 using Verse;
 using Verse.Steam;
@@ -65,10 +66,10 @@ namespace RunAndGun
             var downloadButtonRect = new Rect(inRect.x, inRect.height - ConfirmButtonSize.y, ConfirmButtonSize.x, ConfirmButtonSize.y);
             if (Widgets.ButtonText(downloadButtonRect, ConfirmButtonCaption))
             {
-                RunAndGun.Instance.ResetForbidden();
+                TacticowlMod.Settings.RunAndGun.ResetForbidden();
                 Close();
-                RunAndGun.settings.dialogCEShown = true;
-                LoadedModManager.GetMod<RunAndGun>().WriteSettings();
+                TacticowlMod.Settings.RunAndGun.dialogCEShown = true;
+                LoadedModManager.GetMod<TacticowlMod>().WriteSettings();
             }
             GUI.color = prevColor;
 
@@ -76,8 +77,8 @@ namespace RunAndGun
             if (Widgets.ButtonText(closeButtonRect, "RG_Dialog_CE_DisallowButton".Translate()))
             {
                 Close();
-                RunAndGun.settings.dialogCEShown = true;
-                LoadedModManager.GetMod<RunAndGun>().WriteSettings();
+                TacticowlMod.Settings.RunAndGun.dialogCEShown = true;
+                LoadedModManager.GetMod<TacticowlMod>().WriteSettings();
             }
         }
     }

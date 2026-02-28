@@ -4,9 +4,11 @@ using System.Linq;
 using System.Text;
 using Verse;
 using HarmonyLib;
+using Tacticowl;
 
 namespace RunAndGun.Harmony
 {
+    [HarmonyPatchCategory(nameof(Tacticowl.PatchCategories.RunAndGun))]
     [HarmonyPatch(typeof(Pawn), "TicksPerMove")]
     static class Pawn_TicksPerMove
     {
@@ -22,11 +24,11 @@ namespace RunAndGun.Harmony
                 int penalty = 0;
                 if (hasLightWeapon(__instance))
                 {
-                    penalty = RunAndGun.settings.movementPenaltyLight;
+                    penalty = TacticowlMod.Settings.RunAndGun.movementPenaltyLight;
                 }
                 else
                 {
-                    penalty = RunAndGun.settings.movementPenaltyHeavy;
+                    penalty = TacticowlMod.Settings.RunAndGun.movementPenaltyHeavy;
                 }
                 float factor = ((float)(100 + penalty) / 100);
                 __result = (int)Math.Floor((float)__result * factor);
@@ -37,7 +39,7 @@ namespace RunAndGun.Harmony
             if( pawn.equipment != null && pawn.equipment.Primary != null)
             {
 
-                bool found = RunAndGun.settings.selectedWeapons.TryGetValue(pawn.equipment.Primary.def.defName, out WeaponRecord value);
+                bool found = TacticowlMod.Settings.RunAndGun.selectedWeapons.TryGetValue(pawn.equipment.Primary.def.defName, out WeaponRecord value);
                 if (found && !value.isSelected)
                 {
                     return true;

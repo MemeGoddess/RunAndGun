@@ -6,10 +6,12 @@ using Verse;
 using UnityEngine;
 using RimWorld;
 using RunAndGun.Utilities;
+using Tacticowl;
 
 namespace RunAndGun.Harmony
 {
 
+    [HarmonyPatchCategory(nameof(Tacticowl.PatchCategories.RunAndGun))]
     [HarmonyPatch(typeof(Pawn), "GetGizmos")]
     public class Pawn_DraftController_GetGizmos_Patch
     {
@@ -37,11 +39,11 @@ namespace RunAndGun.Harmony
             if (__instance.equipment?.Primary != null && __instance.equipment.Primary.def.IsRangedWeapon) 
                 weapons.Add(__instance.equipment.Primary.def);
 
-            if (RunAndGun.settings.DualWieldInstalled && (__instance.equipment?.GetOffHand(out var offhand) ?? false) && offhand.def.IsRangedWeapon)
+            if (TacticowlMod.Settings.DualWieldEnabled && (__instance.equipment?.GetOffHand(out var offhand) ?? false) && offhand.def.IsRangedWeapon)
                 weapons.Add(offhand.def);
 
             data._disabled = !weapons.Any() || weapons.Any(x =>
-                RunAndGun.settings.forbiddenWeapons.TryGetValue(x.defName, out var forbidden) &&
+                TacticowlMod.Settings.RunAndGun.forbiddenWeapons.TryGetValue(x.defName, out var forbidden) &&
                 forbidden.isSelected);
 
             if(!weapons.Any())

@@ -5,10 +5,12 @@ using System.Text;
 using Verse;
 using HarmonyLib;
 using RimWorld;
+using Tacticowl;
 using Verse.AI;
 
 namespace RunAndGun.Harmony
 {
+    [HarmonyPatchCategory(nameof(Tacticowl.PatchCategories.RunAndGun))]
     [HarmonyPatch(typeof(MentalStateHandler), "TryStartMentalState")]
     public class MentalStateHandler_TryStartMentalState
     {
@@ -19,14 +21,14 @@ namespace RunAndGun.Harmony
                 return;
             }
             CompRunAndGun comp = ___pawn.TryGetComp<CompRunAndGun>();
-            if (comp != null && RunAndGun.settings.enableForAI)
+            if (comp != null && TacticowlMod.Settings.RunAndGun.enableForAI)
             {
                 comp.isEnabled = shouldRunAndGun();
             }
         }
         static bool shouldRunAndGun()
         {
-            var chance = RunAndGun.settings.enableForFleeChance;
+            var chance = TacticowlMod.Settings.RunAndGun.enableForFleeChance;
 
             if (chance < 1)
                 return false;

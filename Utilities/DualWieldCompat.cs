@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using Tacticowl;
 using Verse;
 
 namespace RunAndGun.Utilities
@@ -16,7 +17,7 @@ namespace RunAndGun.Utilities
         internal static MethodInfo _getOffHand;
         static DualWieldCompat()
         {
-            if (!RunAndGun.settings.DualWieldInstalled)
+            if (!TacticowlMod.Settings.DualWieldEnabled)
                 return;
 
             _getOffHandStance = AccessTools.Method(AccessTools.TypeByName("DualWield.Ext_Pawn"), "GetStancesOffHand");
@@ -31,7 +32,7 @@ namespace RunAndGun.Utilities
 
         internal static Pawn_StanceTracker GetOffHandStance(this Pawn pawn)
         {
-            if (!RunAndGun.settings.DualWieldInstalled)
+            if (!TacticowlMod.Settings.DualWieldEnabled)
                 return null;
 
             if (pawn == null)
@@ -42,7 +43,7 @@ namespace RunAndGun.Utilities
 
         internal static bool HasOffHand(this Pawn_EquipmentTracker equipment)
         {
-            if (!RunAndGun.settings.DualWieldInstalled)
+            if (!TacticowlMod.Settings.DualWieldEnabled)
                 return false;
 
             if (equipment == null)
@@ -55,7 +56,7 @@ namespace RunAndGun.Utilities
         {
             offhand = null;
 
-            if (!RunAndGun.settings.DualWieldInstalled)
+            if (!TacticowlMod.Settings.DualWieldEnabled)
                 return false;
 
             if(equipment == null)

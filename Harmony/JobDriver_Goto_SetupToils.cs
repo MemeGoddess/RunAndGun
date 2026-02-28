@@ -10,6 +10,7 @@ using RimWorld;
 
 namespace RunAndGun.Harmony
 {
+    [HarmonyPatchCategory(nameof(Tacticowl.PatchCategories.RunAndGun))]
     [HarmonyPatch(typeof(JobDriver), "SetupToils")]
     static class JobDriver_SetupToils
     {

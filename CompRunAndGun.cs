@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using Verse;
 using RimWorld;
+using Tacticowl;
 using UnityEngine;
 
 namespace RunAndGun
@@ -39,7 +40,7 @@ namespace RunAndGun
         {
             base.Initialize(props);
             Pawn pawn = (Pawn)(parent as Pawn);
-            bool enableRGForAI = RunAndGun.settings.enableForAI;
+            bool enableRGForAI = TacticowlMod.Settings.RunAndGun.enableForAI;
             if (!pawn.IsColonist && enableRGForAI)
             {
                 isEnabled = true;

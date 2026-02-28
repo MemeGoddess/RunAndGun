@@ -8,6 +8,7 @@ using Verse;
 using Verse.AI;
 using RimWorld;
 using RunAndGun.Utilities;
+using Tacticowl;
 
 namespace RunAndGun
 {
@@ -22,7 +23,7 @@ namespace RunAndGun
 
         public Stance_RunAndGun_Cooldown()
         {
-            if (!RunAndGun.settings.DualWieldInstalled || !verb.CasterIsPawn) return;
+            if (!TacticowlMod.Settings.DualWieldEnabled || !verb.CasterIsPawn) return;
 
             hasOffHand = verb.CasterPawn?.equipment.HasOffHand();
         }
@@ -30,7 +31,7 @@ namespace RunAndGun
         {
             ticksBetweenBurst = ticks;
 
-            if (!RunAndGun.settings.DualWieldInstalled || !verb.CasterIsPawn) return;
+            if (!TacticowlMod.Settings.DualWieldEnabled || !verb.CasterIsPawn) return;
 
             hasOffHand = verb.CasterPawn?.equipment.HasOffHand();
         }
@@ -48,7 +49,7 @@ namespace RunAndGun
 
         private bool CheckDWBusy()
         {
-            if (!RunAndGun.settings.DualWieldInstalled)
+            if (!TacticowlMod.Settings.DualWieldEnabled)
                 return true;
 
             if (!verb.CasterIsPawn)

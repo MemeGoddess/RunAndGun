@@ -8,6 +8,7 @@ using RimWorld;
 
 namespace RunAndGun.Harmony
 {
+    [HarmonyPatchCategory(nameof(Tacticowl.PatchCategories.RunAndGun))]
     [HarmonyPatch(typeof(Verb), "TryStartCastOn", new Type[] { typeof(LocalTargetInfo), typeof(LocalTargetInfo), typeof(bool), typeof(bool), typeof(bool), typeof(bool) })]
     static class Verb_TryStartCastOn
     {
