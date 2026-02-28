@@ -5,51 +5,22 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using DualWield;
 using Tacticowl;
 using Verse;
 
 namespace RunAndGun.Utilities
 {
-    [StaticConstructorOnStartup]
     internal static class DualWieldCompat
     {
-        internal static MethodInfo _getOffHandStance;
-        internal static MethodInfo _getOffHand;
-        static DualWieldCompat()
-        {
-            if (!TacticowlMod.Settings.DualWieldEnabled)
-                return;
-
-            _getOffHandStance = AccessTools.Method(AccessTools.TypeByName("DualWield.Ext_Pawn"), "GetStancesOffHand");
-            _getOffHand = AccessTools.Method(AccessTools.TypeByName("DualWield.Ext_Pawn_EquipmentTracker"), "TryGetOffHandEquipment");
-
-            if (_getOffHandStance == null)
-                throw new Exception("Unable to find method in Dual Wield to get OffHand Stance");
-
-            if (_getOffHand == null)
-                throw new Exception("Unable to find method in Dual Wield to get OffHand Weapon");
-        }
-
         internal static Pawn_StanceTracker GetOffHandStance(this Pawn pawn)
         {
-            if (!TacticowlMod.Settings.DualWieldEnabled)
-                return null;
-
-            if (pawn == null)
-                return null;
-
-            return _getOffHandStance.Invoke(null, new[] { pawn }) as Pawn_StanceTracker;
+            return !TacticowlMod.Settings.DualWieldEnabled ? null : pawn?.GetStancesOffHand();
         }
 
         internal static bool HasOffHand(this Pawn_EquipmentTracker equipment)
         {
-            if (!TacticowlMod.Settings.DualWieldEnabled)
-                return false;
-
-            if (equipment == null)
-                return false;
-
-            return _getOffHand.Invoke(null, new[] { equipment, (object)null }) is true;
+            return TacticowlMod.Settings.DualWieldEnabled && equipment?.TryGetOffHandEquipment(out _) is true;
         }
 
         internal static bool GetOffHand(this Pawn_EquipmentTracker equipment, out ThingWithComps offhand)
@@ -62,10 +33,7 @@ namespace RunAndGun.Utilities
             if(equipment == null)
                 return false;
 
-            var param = new object[] { equipment, null };
-            var found = _getOffHand.Invoke(null, param) is true;
-            offhand = found ? param[1] as ThingWithComps : null;
-
+            var found = equipment?.TryGetOffHandEquipment(out offhand) is true;
             return found;
         }
     }
