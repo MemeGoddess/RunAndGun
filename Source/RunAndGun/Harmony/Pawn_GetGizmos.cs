@@ -32,19 +32,12 @@ namespace RunAndGun.Harmony
             if(data == null)
                 yield break;
 
-            var weapons = new List<ThingDef>();
+            data.RefreshDisabledState();
 
-            if (__instance.equipment?.Primary != null && __instance.equipment.Primary.def.IsRangedWeapon) 
-                weapons.Add(__instance.equipment.Primary.def);
+            var hasPrimaryRangedWeapon = __instance.equipment?.Primary != null && __instance.equipment.Primary.def.IsRangedWeapon;
+            var hasOffHandRangedWeapon = RunAndGun.settings.DualWieldInstalled && (__instance.equipment?.GetOffHand(out var offhand) ?? false) && offhand.def.IsRangedWeapon;
 
-            if (RunAndGun.settings.DualWieldInstalled && (__instance.equipment?.GetOffHand(out var offhand) ?? false) && offhand.def.IsRangedWeapon)
-                weapons.Add(offhand.def);
-
-            data._disabled = !weapons.Any() || weapons.Any(x =>
-                RunAndGun.settings.forbiddenWeapons.TryGetValue(x.defName, out var forbidden) &&
-                forbidden.isSelected);
-
-            if(!weapons.Any())
+            if(!hasPrimaryRangedWeapon && !hasOffHandRangedWeapon)
                 yield break;
 
             RG_Action_Enable_Label ??= "RG_Action_Enable_Label".Translate();
