@@ -110,7 +110,7 @@ namespace RunAndGun.Utilities
                 setting = new Dictionary<string, WeaponRecord>();
 
 
-            Dictionary<string, WeaponRecord> selection = new Dictionary<string, WeaponRecord>();
+            Dictionary<string, WeaponRecord> selection = setting;
 
             foreach (ThingDef weapon in allWeapons)
             {
@@ -146,7 +146,11 @@ namespace RunAndGun.Utilities
         {
             var iconSizeAndGap = IconGap + IconSize;
             int iconsPerRow = (int)(wholeRect.width / 2 / iconSizeAndGap);
-            var totalRows = MathF.Ceiling((setting.Count) / (float)iconsPerRow);
+
+            Dictionary<string, ThingDef> weaponDefs = allWeapons.ToDictionary(o => o.defName);
+            var enabled = setting.Sum(x => weaponDefs.TryGetValue(x.Key, out _) && x.Value.isSelected ? 1 : 0);
+            var disabled = setting.Sum(x => weaponDefs.TryGetValue(x.Key, out _) && !x.Value.isSelected ? 1 : 0);
+            var totalRows = MathF.Ceiling((Math.Max(enabled, disabled)) / (float)iconsPerRow);
             var fullHeight = totalRows * iconSizeAndGap + TextMargin;
 
             Rect leftRect = new Rect(wholeRect.x, 0, wholeRect.width / 2, fullHeight);
@@ -168,19 +172,18 @@ namespace RunAndGun.Utilities
             int indexLeft = 0, indexRight = 0;
             bool changed = false;
 
-            Dictionary<string, ThingDef> weaponDefs = allWeapons.ToDictionary(o => o.defName);
 
             foreach (var item in selection)
             {
-                bool isSelected = item.Value.isSelected;
-                Rect targetRect = isSelected ? rightRect : leftRect;
-                int index = isSelected ? indexRight++ : indexLeft++;
-
-                int col = index % iconsPerRow;
-                int row = index / iconsPerRow;
-
                 if (weaponDefs.TryGetValue(item.Key, out ThingDef weapon))
                 {
+                    bool isSelected = item.Value.isSelected;
+                    Rect targetRect = isSelected ? rightRect : leftRect;
+                    int index = isSelected ? indexRight++ : indexLeft++;
+
+                    int col = index % iconsPerRow;
+                    int row = index / iconsPerRow;
+
                     Vector2 pos = new Vector2(IconSize * col + col * IconGap, IconSize * row + row * IconGap);
                     if (DrawIconForWeapon(weapon, item, targetRect, pos, index))
                     {

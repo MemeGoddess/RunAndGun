@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using RimWorld;
 using RunAndGun.Utilities;
 using UnityEngine;
 using Verse;
@@ -29,9 +30,12 @@ namespace RunAndGun
 
         public readonly bool DualWieldInstalled;
 
+        private SettingsTab tab;
+        private QuickSearchWidget search = new QuickSearchWidget();
+
+
         // === Cached state ===
         public List<ThingDef> allWeapons;
-        private string[] tabNames = new[] { "Weapons", "Forbidden" };
         private float maxWeightMelee, maxWeightRanged, maxWeightTotal;
 
         public Settings()
@@ -74,51 +78,78 @@ namespace RunAndGun
 
             // === General Settings ===
             listing.CheckboxLabeled("RG_EnableRGForAI_Title".Translate(), ref enableForAI, "RG_EnableRGForAI_Description".Translate());
+            var box = listing.GetRect((22f + Text.LineHeight + listing.verticalSpacing + listing.verticalSpacing) * 2);
             if (enableForAI)
             {
-                listing.Label("RG_EnableRGForFleeChance_Title".Translate() + ": " + enableForFleeChance + "%");
-                enableForFleeChance = (int)Widgets.HorizontalSlider(listing.GetRect(22f), enableForFleeChance, 0, 100, false, "");
+                var AISettings = new Listing_Standard();
+                box.SplitVerticallyWithMargin(out var aiListingBox, out box, 6f);
+                AISettings.Begin(aiListingBox);
+                AISettings.Label("RG_EnableRGForFleeChance_Title".Translate() + ": " + enableForFleeChance + "%");
+                enableForFleeChance = (int)Widgets.HorizontalSlider(AISettings.GetRect(22f), enableForFleeChance, 0, 100, false, "");
 
-                listing.Label("RG_AccuracyPenalty_Title".Translate() + ": " + accuracyPenalty + "%");
-                accuracyPenalty = (int)Widgets.HorizontalSlider(listing.GetRect(22f), accuracyPenalty, 0, 100, false, "");
+                AISettings.Label("RG_AccuracyPenalty_Title".Translate() + ": " + accuracyPenalty + "%");
+                accuracyPenalty = (int)Widgets.HorizontalSlider(AISettings.GetRect(22f), accuracyPenalty, 0, 100, false, "");
+                AISettings.End();
             }
 
             // === Movement Penalties ===
-            listing.Label("RG_MovementPenaltyHeavy_Title".Translate() + ": " + movementPenaltyHeavy + "%");
-            movementPenaltyHeavy = (int)Widgets.HorizontalSlider(listing.GetRect(22f), movementPenaltyHeavy, 0, 100, false, "");
+            var movementSettings = new Listing_Standard();
+            movementSettings.Begin(box);
 
-            listing.Label("RG_MovementPenaltyLight_Title".Translate() + ": " + movementPenaltyLight + "%");
-            movementPenaltyLight = (int)Widgets.HorizontalSlider(listing.GetRect(22f), movementPenaltyLight, 0, 100, false, "");
+            movementSettings.Label("RG_MovementPenaltyHeavy_Title".Translate() + ": " + movementPenaltyHeavy + "%");
+            movementPenaltyHeavy = (int)Widgets.HorizontalSlider(movementSettings.GetRect(22f), movementPenaltyHeavy, 0, 100, false, "");
+
+            movementSettings.Label("RG_MovementPenaltyLight_Title".Translate() + ": " + movementPenaltyLight + "%");
+            movementPenaltyLight = (int)Widgets.HorizontalSlider(movementSettings.GetRect(22f), movementPenaltyLight, 0, 100, false, "");
+            movementSettings.End();
 
             listing.GapLine();
 
             // === Tabs ===
             listing.Label("RG_Tabs_Title".Translate());
-            if (Widgets.ButtonText(listing.GetRect(24f), tabsHandler))
-            {
-                List<FloatMenuOption> menu = new List<FloatMenuOption>();
-                foreach (var name in tabNames)
-                {
-                    string local = name;
-                    menu.Add(new FloatMenuOption(local, () => tabsHandler = local));
-                }
-                Find.WindowStack.Add(new FloatMenu(menu));
-            }
-
-            listing.GapLine();
+            
+            var tabs = new Listing_Standard();
+            var tabRect = listing.GetRect(30f + listing.verticalSpacing);
+            
+            tabs.Begin(tabRect);
+            tabs.ColumnWidth = tabRect.width / 2;
+            tabs.Button("RG_tab1".Translate(), tab == SettingsTab.Heavy, () => DoTabClick(SettingsTab.Heavy));
+            tabs.NewColumn();
+            tabs.Button("RG_tab2".Translate(), tab == SettingsTab.Forbidden, () => DoTabClick(SettingsTab.Forbidden));
+            tabs.End();
 
             // === Filters and Custom UI ===
-            if (tabsHandler == tabNames[0])
+            float remainingHeight;
+            switch (tab)
             {
-                listing.Label("RG_WeightLimitFilter_Title".Translate() + $" ({weightLimitFilter:F1})");
-                weightLimitFilter = Widgets.HorizontalSlider(listing.GetRect(22f), weightLimitFilter, 0f, maxWeightTotal, false, "", "0", maxWeightTotal.ToString("F1"));
+                case SettingsTab.Heavy:
+                    listing.GapLine();
+                    listing.Label("RG_WeightLimitFilter_Title".Translate() + $" ({weightLimitFilter:F1})");
+                    listing.Gap(4f);
+                    weightLimitFilter = Widgets.HorizontalSlider(listing.GetRect(22f), weightLimitFilter, 0f, maxWeightTotal, false, "", "0", maxWeightTotal.ToString("F1"));
 
-                //DrawUtility.CustomDrawer_Filter(listing.GetRect(120f), weightLimitFilter, false, 0, maxWeightTotal, Color.yellow);
-                DrawUtility.CustomDrawer_MatchingWeapons_active(listing.GetRect(253f), ref selectedWeapons, allWeapons, weightLimitFilter, "RG_ConsideredLight".Translate(), "RG_ConsideredHeavy".Translate());
-            }
-            else if (tabsHandler == tabNames[1])
-            {
-                DrawUtility.CustomDrawer_MatchingWeapons_active(listing.GetRect(253f), ref forbiddenWeapons, allWeapons, null, "RG_Allow".Translate(), "RG_Forbid".Translate());
+                    search.OnGUI(listing.GetRect(30f));
+                    remainingHeight = rect.height - listing.CurHeight;
+                    DrawUtility.CustomDrawer_MatchingWeapons_active(listing.GetRect(253f), ref selectedWeapons,
+                        allWeapons.Where(weapon => 
+                            search.filter.Matches(weapon.label) ||
+                            search.filter.Matches(weapon.defName)
+                            ).ToList(), 
+                        weightLimitFilter, "RG_ConsideredLight".Translate(), "RG_ConsideredHeavy".Translate());
+                    break;
+                case SettingsTab.Forbidden:
+                    listing.GapLine();
+                    search.OnGUI(listing.GetRect(30f));
+                    remainingHeight = rect.height - listing.CurHeight;
+                    DrawUtility.CustomDrawer_MatchingWeapons_active(listing.GetRect(remainingHeight), ref forbiddenWeapons,
+                        allWeapons.Where(weapon =>
+                            search.filter.Matches(weapon.label) ||
+                            search.filter.Matches(weapon.defName)
+                        ).ToList(), 
+                        null, "RG_Allow".Translate(), "RG_Forbid".Translate());
+                    break;
+                case SettingsTab.None:
+                    break;
             }
 
             listing.End();
@@ -133,6 +164,7 @@ namespace RunAndGun
             Scribe_Values.Look(ref movementPenaltyHeavy, nameof(movementPenaltyHeavy), 40);
             Scribe_Values.Look(ref movementPenaltyLight, nameof(movementPenaltyLight), 10);
             Scribe_Values.Look(ref tabsHandler, nameof(tabsHandler), "none");
+            Scribe_Values.Look(ref tab, nameof(tab));
             Scribe_Values.Look(ref weightLimitFilter, nameof(weightLimitFilter), 3.4f);
 
             Scribe_Collections.Look(ref selectedWeapons, nameof(selectedWeapons), LookMode.Value);
@@ -143,7 +175,7 @@ namespace RunAndGun
 
             if (forbiddenWeapons == null)
                 forbiddenWeapons = new Dictionary<string, WeaponRecord>();
-
+            
             base.ExposeData();
         }
 
@@ -154,6 +186,36 @@ namespace RunAndGun
                     return true;
             return false;
         }
+
+        private void DoTabClick(SettingsTab selectedTab)
+        {
+            search = new QuickSearchWidget();
+
+            tab = selectedTab == tab 
+                ? SettingsTab.None 
+                : selectedTab;
+        }
+        
     }
 
+    public enum SettingsTab
+    {
+        None,
+        Heavy,
+        Forbidden
+    }
+
+    public static class SettingsExtensions
+    {
+        private static Color SelectedColor = new Color(0.5f, 1f, 0.5f, 1f);
+        public static float Button(this Listing_Standard listing, string label, bool active, Action action)
+        {
+            var original = GUI.color;
+            GUI.color = active ? SelectedColor : original;
+            if (listing.ButtonText(label))
+                action.Invoke();
+            GUI.color = original;
+            return 30f + listing.verticalSpacing;
+        }
+    }
 }
