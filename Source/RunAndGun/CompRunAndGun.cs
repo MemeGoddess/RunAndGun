@@ -44,7 +44,7 @@ namespace RunAndGun
             if (pawn == null)
                 return false;
 
-            if (!pawn.IsColonist && !RunAndGun.settings.enableForAI)
+            if (pawn.Faction != Find.FactionManager.OfPlayer && !RunAndGun.settings.enableForAI)
                 return false;
 
             return !GetEquippedRangedWeapons().Any(IsForbiddenWeapon);
