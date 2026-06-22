@@ -22,6 +22,8 @@ namespace RunAndGun
             }
         }
 
+        private long _disabledUpdateTick = -1;
+
         internal bool _isEnabled = false;
         internal bool _disabled = false;
         public bool isEnabled
@@ -32,12 +34,15 @@ namespace RunAndGun
 
         public void RefreshDisabledState()
         {
+            _disabledUpdateTick = Find.TickManager.TicksGame;
             var rangedWeapons = GetEquippedRangedWeapons().ToList();
             _disabled = !rangedWeapons.Any() || rangedWeapons.Any(IsForbiddenWeapon);
         }
 
         private bool IsValid()
         {
+            if(_disabledUpdateTick < Find.TickManager.TicksGame + 100)
+                RefreshDisabledState();
             if (_disabled)
                 return false;
 
