@@ -59,9 +59,7 @@ namespace RunAndGun
             var stance = Pawn.GetOffHandStance();
 
             return !(stance?.curStance is Stance_Mobile);
-
         }
-
     }
 
 }
