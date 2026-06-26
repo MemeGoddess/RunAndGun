@@ -21,6 +21,7 @@ namespace RunAndGun.Utilities
         private static readonly Color SelectedOptionColor = new Color(0.5f, 1f, 0.5f, 1f);
         private static readonly Color constGrey = new Color(0.8f, 0.8f, 0.8f, 1f);
         private static readonly Color background = new Color(0.5f, 0f, 0f, 0.1f);
+        private static Dictionary<ThingDef, Color> _colorCache = new Dictionary<ThingDef, Color>();
 
         private static void DrawBackground(Rect rect, Color color)
         {
@@ -41,9 +42,6 @@ namespace RunAndGun.Utilities
             Text.Anchor = TextAnchor.UpperLeft;
         }
 
-        private static Color GetColor(ThingDef weapon) =>
-            weapon.graphicData?.color ?? Color.white;
-
         private static bool DrawIconForWeapon(ThingDef weapon, KeyValuePair<string, WeaponRecord> item, Rect contentRect, Vector2 iconOffset, int buttonID)
         {
             var iconRect = new Rect(contentRect.x + iconOffset.x, contentRect.y + iconOffset.y, IconSize, IconSize);
@@ -56,7 +54,7 @@ namespace RunAndGun.Utilities
             GUI.DrawTexture(iconRect, ContentFinder<Texture2D>.Get("square"));
 
             Texture2D resolvedIcon = weapon.uiIcon ?? weapon.graphicData?.Graphic?.MatSingle.mainTexture as Texture2D ?? BaseContent.BadTex;
-            GUI.color = GetColor(weapon);
+            GUI.color = GetColorCached(weapon);
             GUI.DrawTexture(iconRect, resolvedIcon);
             GUI.color = Color.white;
 
@@ -68,39 +66,23 @@ namespace RunAndGun.Utilities
             return false;
         }
 
-        // 🔹 Draws a slider with a background and label
-        public static float CustomDrawer_Filter(Rect rect, float currentValue, bool isPercentage, float min, float max, Color bg)
+        private static Color GetColorCached(ThingDef thingDef)
         {
-            DrawBackground(rect, bg);
-            const int labelWidth = 50;
+            if (_colorCache.TryGetValue(thingDef, out var cachedColor))
+                return cachedColor;
 
-            Rect sliderRect = new Rect(rect.x, rect.y, rect.width - labelWidth, rect.height).ContractedBy(2f);
-            Rect labelRect = new Rect(sliderRect.xMax + 5f, rect.y + 4f, labelWidth, rect.height);
-
-            Widgets.Label(labelRect, isPercentage ? $"{Mathf.Round(currentValue * 100f):F0}%" : currentValue.ToString("F2"));
-            return Widgets.HorizontalSlider(sliderRect, currentValue, min, max, true);
+            var color = GetColor(thingDef);
+            _colorCache[thingDef] = color;
+            return color;
         }
 
-        // 🔹 Simple tabs (returns new selected tab string)
-        public static string CustomDrawer_Tabs(Rect rect, string currentTab, string[] tabs)
+        private static Color GetColor(ThingDef thingDef)
         {
-            float buttonWidth = 140f;
-            float offset = 0f;
-            string newSelection = currentTab;
+            var stuff = GenStuff.DefaultStuffFor(thingDef);
+            if (stuff != null)
+                return thingDef.GetColorForStuff(stuff);
 
-            foreach (string tab in tabs)
-            {
-                Rect buttonRect = new Rect(rect.x + offset, rect.y, buttonWidth, 24f);
-                Color originalColor = GUI.color;
-                if (tab == currentTab) GUI.color = SelectedOptionColor;
-
-                if (Widgets.ButtonText(buttonRect, tab))
-                    newSelection = (currentTab == tab) ? "none" : tab;
-
-                GUI.color = originalColor;
-                offset += buttonWidth;
-            }
-            return newSelection;
+            return thingDef.graphicData?.color ?? Color.white;
         }
 
         // 🔹 Filters weapons for selection (vanilla version)

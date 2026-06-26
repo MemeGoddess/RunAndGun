@@ -18,6 +18,7 @@ namespace RunAndGun
     {
         // === Stored settings ===
         public bool dialogCEShown = false;
+        public bool enabledByDefault = true;
         public bool enableForAI = true;
         public int enableForFleeChance = 100;
         public int accuracyPenalty = 10;
@@ -40,8 +41,7 @@ namespace RunAndGun
 
         public Settings()
         {
-            DualWieldInstalled = ModsConfig.IsActive("MemeGoddess.DualWield") ||
-                                 ModsConfig.IsActive("MemeGoddess.DualWield_steam");
+            DualWieldInstalled = ModLister.AnyModActiveNoSuffix(["MemeGoddess.DualWield"]);
         }
 
         public void Initialize()
@@ -77,6 +77,7 @@ namespace RunAndGun
             listing.Begin(rect);
 
             // === General Settings ===
+            listing.CheckboxLabeled("RG_EnableRGForColonists_Title".Translate(), ref enabledByDefault, "RG_EnableRGForColonists_Description".Translate());
             listing.CheckboxLabeled("RG_EnableRGForAI_Title".Translate(), ref enableForAI, "RG_EnableRGForAI_Description".Translate());
             var box = listing.GetRect((22f + Text.LineHeight + listing.verticalSpacing + listing.verticalSpacing) * 2);
             if (enableForAI)
@@ -108,15 +109,17 @@ namespace RunAndGun
             // === Tabs ===
             listing.Label("RG_Tabs_Title".Translate());
             
-            var tabs = new Listing_Standard();
-            var tabRect = listing.GetRect(30f + listing.verticalSpacing);
-            
-            tabs.Begin(tabRect);
-            tabs.ColumnWidth = tabRect.width / 2;
-            tabs.Button("RG_tab1".Translate(), tab == SettingsTab.Heavy, () => DoTabClick(SettingsTab.Heavy));
-            tabs.NewColumn();
-            tabs.Button("RG_tab2".Translate(), tab == SettingsTab.Forbidden, () => DoTabClick(SettingsTab.Forbidden));
-            tabs.End();
+            //var tabs = new Listing_Standard();
+            var tabRect = listing.GetRect(Text.LineHeight);
+
+            var tabsList = new List<TabRecord>
+            {
+                new("RG_tab1".Translate(), () => tab = SettingsTab.Heavy, () => tab == SettingsTab.Heavy),
+                new("RG_tab2".Translate(), () => tab = SettingsTab.Forbidden, () => tab == SettingsTab.Forbidden)
+
+            };
+
+            DrawTabs(tabRect, tabsList);
 
             // === Filters and Custom UI ===
             float remainingHeight;
@@ -129,7 +132,6 @@ namespace RunAndGun
                     weightLimitFilter = Widgets.HorizontalSlider(listing.GetRect(22f), weightLimitFilter, 0f, maxWeightTotal, false, "", "0", maxWeightTotal.ToString("F1"));
 
                     search.OnGUI(listing.GetRect(30f));
-                    remainingHeight = rect.height - listing.CurHeight;
                     DrawUtility.CustomDrawer_MatchingWeapons_active(listing.GetRect(253f), ref selectedWeapons,
                         allWeapons.Where(weapon => 
                             search.filter.Matches(weapon.label) ||
@@ -148,8 +150,6 @@ namespace RunAndGun
                         ).ToList(), 
                         null, "RG_Allow".Translate(), "RG_Forbid".Translate());
                     break;
-                case SettingsTab.None:
-                    break;
             }
 
             listing.End();
@@ -164,7 +164,6 @@ namespace RunAndGun
             Scribe_Values.Look(ref movementPenaltyHeavy, nameof(movementPenaltyHeavy), 40);
             Scribe_Values.Look(ref movementPenaltyLight, nameof(movementPenaltyLight), 10);
             Scribe_Values.Look(ref tabsHandler, nameof(tabsHandler), "none");
-            Scribe_Values.Look(ref tab, nameof(tab));
             Scribe_Values.Look(ref weightLimitFilter, nameof(weightLimitFilter), 3.4f);
 
             Scribe_Collections.Look(ref selectedWeapons, nameof(selectedWeapons), LookMode.Value);
@@ -187,20 +186,54 @@ namespace RunAndGun
             return false;
         }
 
-        private void DoTabClick(SettingsTab selectedTab)
-        {
-            search = new QuickSearchWidget();
+        //private void DoTabClick(SettingsTab selectedTab)
+        //{
+        //    search = new QuickSearchWidget();
 
-            tab = selectedTab == tab 
-                ? SettingsTab.None 
-                : selectedTab;
+        //    tab = selectedTab == tab 
+        //        ? SettingsTab.None 
+        //        : selectedTab;
+        //}
+
+        private static Color SelectedColor = new Color(0.5f, 1f, 0.5f, 1f);
+        private void DrawTabs(Rect rect, List<TabRecord> tabs)
+        {
+            var buttons = tabs.Count;
+            var rects = SplitRectangle(rect, buttons, 4f);
+
+            var color = GUI.color;
+            for (var index = 0; index < rects.Length; index++)
+            {
+                var button = rects[index];
+                var tab = tabs[index];
+
+                if (tab.Selected)
+                    GUI.color = SelectedColor;
+                if (Widgets.ButtonText(button, tab.label))
+                    tab.clickedAction();
+                GUI.color = color;
+            }
         }
-        
+
+        private Rect[] SplitRectangle(Rect rect, int count, float margin)
+        {
+            var rects = new Rect[count];
+            var totalMargin = margin * (count - 1);
+            var usableWidth = rect.width - totalMargin;
+            var rectWidth = usableWidth / count;
+
+            for (var i = 0; i < count; i++)
+            {
+                var xPosition = rect.x + (i * (rectWidth + margin));
+                rects[i] = new Rect(xPosition, rect.y, rectWidth, rect.height);
+            }
+
+            return rects;
+        }
     }
 
     public enum SettingsTab
     {
-        None,
         Heavy,
         Forbidden
     }

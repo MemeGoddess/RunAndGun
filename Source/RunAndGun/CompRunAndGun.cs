@@ -70,19 +70,6 @@ namespace RunAndGun
             return isEnabled.ToString();
         }
 
-        public override void Initialize(CompProperties props)
-        {
-            base.Initialize(props);
-            Pawn pawn = (Pawn)(parent as Pawn);
-            bool enableRGForAI = RunAndGun.settings.enableForAI;
-            if (!pawn.IsColonist && enableRGForAI)
-            {
-                isEnabled = true;
-            }
-
-            RefreshDisabledState();
-        }
-
         public override void PostExposeData()
         {
             base.PostExposeData();
