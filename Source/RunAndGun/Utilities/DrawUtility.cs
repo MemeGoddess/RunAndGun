@@ -134,9 +134,17 @@ namespace RunAndGun.Utilities
             var disabled = setting.Sum(x => weaponDefs.TryGetValue(x.Key, out _) && !x.Value.isSelected ? 1 : 0);
             var totalRows = MathF.Ceiling((Math.Max(enabled, disabled)) / (float)iconsPerRow);
             var fullHeight = totalRows * iconSizeAndGap + TextMargin;
+            var offset = 0f;
+            if (fullHeight > wholeRect.height)
+            {
+                iconsPerRow -= 1;
+                totalRows = MathF.Ceiling((Math.Max(enabled, disabled)) / (float)iconsPerRow);
+                fullHeight = totalRows * iconSizeAndGap + TextMargin;
+                offset = iconSizeAndGap / 2;
+            }
 
-            Rect leftRect = new Rect(wholeRect.x, 0, wholeRect.width / 2, fullHeight);
-            Rect rightRect = new Rect(leftRect.xMax, 0, wholeRect.width / 2, fullHeight);
+            Rect leftRect = new Rect(wholeRect.x + offset, 0, wholeRect.width / 2, fullHeight);
+            Rect rightRect = new Rect(leftRect.xMax - offset, 0, wholeRect.width / 2, fullHeight);
 
             Widgets.BeginScrollView(wholeRect, ref scroll, new Rect(0f, 0f, wholeRect.width - 16f, fullHeight));
             DrawBackground(new Rect(0, 0, wholeRect.width, fullHeight), background);

@@ -41,6 +41,7 @@ namespace RunAndGun
         // === Cached state ===
         public List<ThingDef> allWeapons;
         private float maxWeightMelee, maxWeightRanged, maxWeightTotal;
+        private Color MenuSectionBGBorderColor = new ColorInt(135, 135, 135).ToColor;
 
         public void Initialize()
         {
@@ -70,7 +71,7 @@ namespace RunAndGun
         public void DoWindowContents(Rect rect)
         {
             Initialize();
-
+            var color = GUI.color;
             var listing = new Listing_Standard();
             listing.Begin(rect);
 
@@ -118,19 +119,30 @@ namespace RunAndGun
             };
 
             DrawTabs(tabRect, tabsList);
+            listing.Gap(4f);
 
             // === Filters and Custom UI ===
-            float remainingHeight;
+            float remainingHeight = rect.height - listing.CurHeight;
+            var tabViewBox = listing.GetRect(remainingHeight);
+            GUI.color = MenuSectionBGBorderColor;
+            Widgets.DrawBox(tabViewBox);
+            GUI.color = color;
+            var tabView = new Listing_Standard();
+            var contraction = 8f;
+            tabView.Begin(tabViewBox.ContractedBy(contraction));
             switch (tab)
             {
                 case SettingsTab.Heavy:
-                    listing.GapLine();
-                    listing.Label("RG_WeightLimitFilter_Title".Translate() + $" ({weightLimitFilter:F1})");
-                    listing.Gap(4f);
-                    weightLimitFilter = Widgets.HorizontalSlider(listing.GetRect(22f), weightLimitFilter, 0f, maxWeightTotal, false, "", "0", maxWeightTotal.ToString("F1"));
+                    tabView.Label("RG_WeightLimitFilter_Title".Translate() + $" ({weightLimitFilter:F1})");
+                    tabView.Gap(4f);
+                    weightLimitFilter = Widgets.HorizontalSlider(tabView.GetRect(22f), weightLimitFilter, 0f, maxWeightTotal, false, "", "0", maxWeightTotal.ToString("F1"));
 
-                    search.OnGUI(listing.GetRect(30f));
-                    DrawUtility.CustomDrawer_MatchingWeapons_active(listing.GetRect(253f), ref selectedWeapons,
+                    search.OnGUI(tabView.GetRect(Text.LineHeight));
+                    tabView.Gap(4f);
+                    tabViewBox.SplitHorizontally(tabView.CurHeight + contraction, out tabViewBox, out var heavyRect);
+                    tabView.End();
+                    
+                    DrawUtility.CustomDrawer_MatchingWeapons_active(heavyRect.ContractedBy(1f), ref selectedWeapons,
                         allWeapons.Where(weapon => 
                             search.filter.Matches(weapon.label) ||
                             search.filter.Matches(weapon.defName)
@@ -138,10 +150,13 @@ namespace RunAndGun
                         weightLimitFilter, "RG_ConsideredLight".Translate(), "RG_ConsideredHeavy".Translate());
                     break;
                 case SettingsTab.Forbidden:
-                    listing.GapLine();
-                    search.OnGUI(listing.GetRect(30f));
-                    remainingHeight = rect.height - listing.CurHeight;
-                    DrawUtility.CustomDrawer_MatchingWeapons_active(listing.GetRect(remainingHeight), ref forbiddenWeapons,
+                    tabView.Gap(4f);
+                    search.OnGUI(tabView.GetRect(Text.LineHeight));
+                    tabView.Gap(4f);
+                    tabViewBox.SplitHorizontally(tabView.CurHeight + contraction, out tabViewBox, out var forbiddenRect);
+                    tabView.End();
+                    
+                    DrawUtility.CustomDrawer_MatchingWeapons_active(forbiddenRect.ContractedBy(1f), ref forbiddenWeapons,
                         allWeapons.Where(weapon =>
                             search.filter.Matches(weapon.label) ||
                             search.filter.Matches(weapon.defName)
@@ -149,7 +164,6 @@ namespace RunAndGun
                         null, "RG_Allow".Translate(), "RG_Forbid".Translate());
                     break;
             }
-
             listing.End();
         }
 
