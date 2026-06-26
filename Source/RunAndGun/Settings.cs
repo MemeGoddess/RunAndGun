@@ -29,7 +29,10 @@ namespace RunAndGun
         public Dictionary<string, WeaponRecord> selectedWeapons = new Dictionary<string, WeaponRecord>();
         public Dictionary<string, WeaponRecord> forbiddenWeapons = new Dictionary<string, WeaponRecord>();
 
-        public readonly bool DualWieldInstalled;
+        public readonly bool DualWieldInstalled = ModLister.AnyModActiveNoSuffix(["MemeGoddess.DualWield"]);
+        public const string CEIDs = "CETeam.CombatExtended";
+        public readonly bool CEInstalled = ModLister.AnyModActiveNoSuffix(CEIDs.Split(','));
+
 
         private SettingsTab tab;
         private QuickSearchWidget search = new QuickSearchWidget();
@@ -39,11 +42,6 @@ namespace RunAndGun
         public List<ThingDef> allWeapons;
         private float maxWeightMelee, maxWeightRanged, maxWeightTotal;
 
-        public Settings()
-        {
-            DualWieldInstalled = ModLister.AnyModActiveNoSuffix(["MemeGoddess.DualWield"]);
-        }
-
         public void Initialize()
         {
             allWeapons = WeaponUtility.getAllWeapons();
@@ -52,15 +50,15 @@ namespace RunAndGun
             maxWeightRanged += 1;
             maxWeightTotal = Math.Max(maxWeightMelee, maxWeightRanged);
 
-            bool combatExtendedLoaded = AssemblyExists("CombatExtended");
-            if (combatExtendedLoaded && !dialogCEShown)
+            switch (CEInstalled)
             {
-                Find.WindowStack.Add(new Dialog_CE("RG_Dialog_CE_Title".Translate(), "RG_Dialog_CE_Description".Translate()));
-                dialogCEShown = true;
-            }
-            else if (!combatExtendedLoaded)
-            {
-                dialogCEShown = false;
+                case true when !dialogCEShown:
+                    Find.WindowStack.Add(new Dialog_CE("RG_Dialog_CE_Title".Translate(), "RG_Dialog_CE_Description".Translate()));
+                    dialogCEShown = true;
+                    break;
+                case false:
+                    dialogCEShown = false;
+                    break;
             }
 
             if (selectedWeapons == null)

@@ -14,17 +14,15 @@ namespace RunAndGun
     class Stance_RunAndGun_Cooldown : Stance_Cooldown
     {
         private static FieldInfo burstsLeft;
-        
 
+        public static HashSet<ushort> allowedJobs = [JobDefOf.Goto.shortHash];
         private bool? hasOffHand;
         private int ticksBetweenBurst;
-        public override bool StanceBusy => Pawn?.CurJob == null || (Pawn.CurJob.def != JobDefOf.Goto && CheckDWBusy());
+        public override bool StanceBusy => Pawn?.CurJob == null || (!allowedJobs.Contains(Pawn.CurJobDef.shortHash) && CheckDWBusy());
 
         public Stance_RunAndGun_Cooldown()
         {
-            if (!RunAndGun.settings.DualWieldInstalled || !verb.CasterIsPawn) return;
 
-            hasOffHand = verb.CasterPawn?.equipment.HasOffHand();
         }
         public Stance_RunAndGun_Cooldown(int ticks, LocalTargetInfo focusTarg, Verb verb) : base(ticks, focusTarg, verb)
         {

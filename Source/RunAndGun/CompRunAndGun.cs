@@ -22,11 +22,11 @@ namespace RunAndGun
             }
         }
 
-        internal bool _isEnabled = false;
-        internal bool _disabled = false;
+        internal bool? _isEnabled;
+        internal bool? _disabled;
         public bool isEnabled
         {
-            get => _isEnabled && IsValid();
+            get => (_isEnabled??= pawn.IsColonist ? RunAndGun.settings.enabledByDefault : RunAndGun.settings.enableForAI) && IsValid();
             set => _isEnabled = value;
         }
 
@@ -38,7 +38,10 @@ namespace RunAndGun
 
         private bool IsValid()
         {
-            if (_disabled)
+            if(_disabled == null)
+                RefreshDisabledState();
+            
+            if (_disabled ?? true)
                 return false;
 
             if (pawn == null)

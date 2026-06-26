@@ -51,7 +51,7 @@ namespace RunAndGun.Harmony
                 icon = ContentFinder<Texture2D>.Get(("UI/Buttons/enable_RG"), true),
                 isActive = () => data.isEnabled,
                 toggleAction = () => { data.isEnabled = !data.isEnabled; } ,
-                Disabled = data._disabled,
+                Disabled = data._disabled ?? true,
             };
         }
     }
