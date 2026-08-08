@@ -16,11 +16,10 @@ namespace RunAndGun.Harmony
         static void Postfix(JobDriver __instance, List<Toil> ___toils)
         {
             if(!(__instance is JobDriver_Goto jobDriver))
-            {
                 return;
-            }
 
-            if (!___toils.Any()) return;
+            if (!___toils.Any()) 
+                return;
 
             var toil = ___toils.ElementAt(0);
             toil.AddPreTickAction(delegate
@@ -28,40 +27,34 @@ namespace RunAndGun.Harmony
                 if (jobDriver.pawn != null && 
                     jobDriver.pawn.IsHashIntervalTick(10) && 
                     !jobDriver.pawn.IsBurning() && 
-                    (jobDriver.pawn.Drafted || !jobDriver.pawn.IsColonist) && !jobDriver.pawn.Downed)
-                {
+                    (jobDriver.pawn.Drafted || !jobDriver.pawn.IsColonist) && !jobDriver.pawn.Downed) 
                     checkForAutoAttack(jobDriver);
-                }
             });
         }
         static void checkForAutoAttack(JobDriver_Goto __instance)
         {
-            if ((__instance.pawn.story != null &&
-                 __instance.pawn.story.DisabledWorkTagsBackstoryAndTraits.HasFlag(WorkTags.Violent))
+            if ((__instance.pawn.story is { } tracker &&
+                 tracker.DisabledWorkTagsBackstoryAndTraits.HasFlag(WorkTags.Violent))
                 || __instance.pawn.Faction == null
                 || __instance.pawn.stances.curStance is Stance_RunAndGun
                 || __instance.pawn.jobs.curJob.def != JobDefOf.Goto
-                || (__instance.pawn.drafter != null && !__instance.pawn.drafter.FireAtWill)) return;
-
+                || __instance.pawn.drafter is { FireAtWill: false }) return;
+                    
             var comp = __instance.pawn.TryGetComp<CompRunAndGun>();
-            if (comp == null || comp.isEnabled == false)
-            {
+            if (!(comp is { isEnabled: true }))
                 return;
-            }
+            
             var verb = __instance.pawn.TryGetAttackVerb(null);
-
-            if (verb == null) return;
-            TargetScanFlags targetScanFlags = TargetScanFlags.NeedLOSToPawns | TargetScanFlags.NeedLOSToNonPawns | TargetScanFlags.NeedThreat;
-            if (verb.IsIncendiary_Ranged())
-            {
-                targetScanFlags |= TargetScanFlags.NeedNonBurning;
-            }
-            Thing thing = (Thing)AttackTargetFinder.BestShootTargetFromCurrentPosition(__instance.pawn, targetScanFlags, null, 0f, 9999f);
-            if (thing != null && !(verb.IsMeleeAttack && __instance.pawn.CanReachImmediate(thing, PathEndMode.Touch))) //Don't allow melee attacks, but take into account ranged animals or dual wield users
-            {
-                __instance.pawn.TryStartAttack(thing);
+            if (verb == null) 
                 return;
-            }
+            
+            var targetScanFlags = TargetScanFlags.NeedLOSToPawns | TargetScanFlags.NeedLOSToNonPawns | TargetScanFlags.NeedThreat | TargetScanFlags.NeedAutoTargetable;
+            if (verb.IsIncendiary_Ranged()) 
+                targetScanFlags |= TargetScanFlags.NeedNonBurning;
+            
+            var thing = (Thing)AttackTargetFinder.BestShootTargetFromCurrentPosition(__instance.pawn, targetScanFlags, null, 0f, 9999f);
+            if (thing != null && !(verb.IsMeleeAttack && __instance.pawn.CanReachImmediate(thing, PathEndMode.Touch))) //Don't allow melee attacks, but take into account ranged animals or dual wield users
+                __instance.pawn.TryStartAttack(thing);
         }
 
     }
