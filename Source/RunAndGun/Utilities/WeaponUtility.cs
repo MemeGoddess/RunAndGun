@@ -9,19 +9,10 @@ namespace RunAndGun.Utilities
 {
     static class WeaponUtility
     {
-        public static List<ThingDef> getAllWeapons()
-        {
-            List<ThingDef> allWeapons = new List<ThingDef>();
-
-            Predicate<ThingDef> isWeapon = (ThingDef td) => td.equipmentType == EquipmentType.Primary && !td.weaponTags.NullOrEmpty<string>() && !td.destroyOnDrop;
-            foreach (ThingDef thingDef in from td in DefDatabase<ThingDef>.AllDefs
-                                          where isWeapon(td)
-                                          select td)
-            {
-                allWeapons.Add(thingDef);
-            }
-            return allWeapons;
-        }
+        public static List<ThingDef> getAllWeapons() =>
+            DefDatabase<ThingDef>.AllDefs
+                .Where(td => td.equipmentType == EquipmentType.Primary && !td.weaponTags.NullOrEmpty() && !td.weaponTags.Contains("TurretGun"))
+                .ToList();
 
         internal static void getHeaviestWeapons(List<ThingDef> list, out float weightMelee, out float weightRanged)
         {
